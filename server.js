@@ -58,16 +58,12 @@ io.on('connection', (socket) => {
     socket.on('joinGame', (playerName) => {
         if (!players[socket.id]) {
             players[socket.id] = { name: playerName, balance: 10000, hand: [] };
-        }
-        updateLeaderboard();
-        if (!gameInProgress) {
-            startNewRound();
+            updateLeaderboard();
         }
     });
 
     socket.on('placeBet', ({ playerName, betAmount }) => {
-        if (players[socket.id].balance >= betAmount && !gameInProgress) {
-            players[socket.id].balance -= betAmount;
+        if (!gameInProgress) {
             players[socket.id].bet = betAmount;
             currentPlayer = socket.id;
             startNewRound();
@@ -80,10 +76,10 @@ io.on('connection', (socket) => {
             const playerValue = calculateHandValue(players[socket.id].hand);
             if (playerValue > 21) {
                 gameInProgress = false;
-                socket.emit('gameState', { playerHand: players[socket.id].hand, dealerHand, status: 'Busted!' });
+                io.emit('gameState', { playerHand: players[socket.id].hand, dealerHand, status: 'Busted!' });
                 endRound();
             } else {
-                socket.emit('gameState', { playerHand: players[socket.id].hand, dealerHand, status: `Your value: ${playerValue}` });
+                io.emit('gameState', { playerHand: players[socket.id].hand, dealerHand, status: `Your value: ${playerValue}` });
             }
         }
     });

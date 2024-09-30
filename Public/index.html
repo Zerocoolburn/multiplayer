@@ -9,26 +9,32 @@
 <body>
     <div class="container">
         <h1>Multiplayer Blackjack</h1>
+        
         <div id="player-info">
             <input type="text" id="name-input" placeholder="Enter your name">
             <button id="join-game">Join Game</button>
         </div>
 
         <div id="game-area" class="hidden">
-            <div id="dealer-hand" class="hand">
-                <h2>Dealer's Hand</h2>
-                <div id="dealer-cards"></div>
+            <div class="table">
+                <div id="dealer-hand" class="hand">
+                    <h2>Dealer's Hand</h2>
+                    <div id="dealer-cards" class="cards"></div>
+                </div>
+
+                <div id="player-hand" class="hand">
+                    <h2>Your Hand (<span id="player-name"></span>)</h2>
+                    <div id="player-cards" class="cards"></div>
+                </div>
             </div>
 
-            <div id="player-hand" class="hand">
-                <h2>Your Hand (<span id="player-name"></span>)</h2>
-                <div id="player-cards"></div>
-            </div>
-
-            <div id="balance-info">
+            <div class="balance">
                 <h3>Your Balance: $<span id="player-balance">10000</span></h3>
                 <input type="number" id="bet-amount" placeholder="Enter bet">
                 <button id="place-bet">Place Bet</button>
+            </div>
+
+            <div class="actions hidden" id="actions">
                 <button id="hit">Hit</button>
                 <button id="stand">Stand</button>
             </div>

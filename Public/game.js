@@ -11,6 +11,7 @@ const playerBalanceSpan = document.getElementById('player-balance');
 const playerNameSpan = document.getElementById('player-name');
 const gameStatusDiv = document.getElementById('game-status');
 const leaderboardList = document.getElementById('leaderboard-list');
+const actionsDiv = document.getElementById('actions');
 
 document.getElementById('join-game').addEventListener('click', () => {
     playerName = document.getElementById('name-input').value.trim();
@@ -31,6 +32,7 @@ document.getElementById('place-bet').addEventListener('click', () => {
         return;
     }
     currentBet = betAmount;
+    actionsDiv.classList.remove('hidden');
     socket.emit('placeBet', { playerName, betAmount });
 });
 
