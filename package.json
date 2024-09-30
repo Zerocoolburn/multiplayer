@@ -1,7 +1,7 @@
 {
-  "name": "multiplayer-game",
+  "name": "multiplayer-tictactoe",
   "version": "1.0.0",
-  "description": "A simple multiplayer game with Socket.IO",
+  "description": "Multiplayer Tic-Tac-Toe with Socket.IO",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
