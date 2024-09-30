@@ -1,0 +1,13 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: #f0f0f0;
+}
+
+#game-container {
+  width: 600px;
+  height: 400px;
+  margin: 0 auto;
+  background-color: #fff;
+  border: 2px solid #000;
+}
