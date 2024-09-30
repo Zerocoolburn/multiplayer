@@ -7,43 +7,25 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+    <div class="game">
         <h1>Multiplayer Blackjack</h1>
-        
-        <div id="player-info">
-            <input type="text" id="name-input" placeholder="Enter your name">
-            <button id="join-game">Join Game</button>
+        <div id="dealer">
+            <h2>Dealer's Hand</h2>
+            <div id="dealer-cards" class="cards"></div>
         </div>
-
-        <div id="game-area" class="hidden">
-            <div class="table">
-                <div id="dealer-hand" class="hand">
-                    <h2>Dealer's Hand</h2>
-                    <div id="dealer-cards" class="cards"></div>
-                </div>
-
-                <div id="player-hand" class="hand">
-                    <h2>Your Hand (<span id="player-name"></span>)</h2>
-                    <div id="player-cards" class="cards"></div>
-                </div>
-            </div>
-
-            <div class="balance">
-                <h3>Your Balance: $<span id="player-balance">10000</span></h3>
-                <input type="number" id="bet-amount" placeholder="Enter bet">
-                <button id="place-bet">Place Bet</button>
-            </div>
-
-            <div class="actions hidden" id="actions">
-                <button id="hit">Hit</button>
-                <button id="stand">Stand</button>
-            </div>
-
-            <div id="game-status"></div>
+        <div id="player">
+            <h2>Your Hand (<span id="player-name"></span>)</h2>
+            <div id="player-cards" class="cards"></div>
         </div>
-
+        <div class="controls">
+            <p>Your Balance: $<span id="balance">10000</span></p>
+            <input id="bet" type="number" placeholder="Bet amount">
+            <button id="place-bet">Place Bet</button>
+            <button id="hit">Hit</button>
+            <button id="stand">Stand</button>
+        </div>
         <div id="leaderboard">
-            <h2>Leaderboard</h2>
+            <h3>Leaderboard</h3>
             <ul id="leaderboard-list"></ul>
         </div>
     </div>
