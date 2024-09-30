@@ -1,7 +1,7 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #222;
-    color: #fff;
+    background-color: #2c3e50;
+    color: #ecf0f1;
     text-align: center;
 }
 
@@ -27,6 +27,7 @@ body {
     justify-content: center;
     font-size: 20px;
     color: #fff;
+    background-color: #34495e;
     position: relative;
     transition: transform 0.3s, box-shadow 0.3s;
 }

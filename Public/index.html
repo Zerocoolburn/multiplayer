@@ -13,7 +13,7 @@
             <h2>Dealer's Hand</h2>
         </div>
         <div id="player-hand" class="hand">
-            <h2>Your Hand</h2>
+            <h2>Your Hand (<span id="player-name"></span>)</h2>
         </div>
         <div>
             <p>Your Balance: <span id="balance">$10000</span></p>
@@ -27,6 +27,7 @@
             <ul id="leaderboard-list"></ul>
         </div>
     </div>
+    <script src="/socket.io/socket.io.js"></script>
     <script src="game.js"></script>
 </body>
 </html>

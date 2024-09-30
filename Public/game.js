@@ -1,75 +1,71 @@
-const ws = new WebSocket(`ws://${window.location.host}`);
+const socket = io();
 
-ws.onopen = () => {
-    const name = prompt("Enter your name:");
-    ws.send(JSON.stringify({ type: 'join', name }));
-};
+let playerName = prompt("Enter your name:");
 
-ws.onmessage = (message) => {
-    const data = JSON.parse(message.data);
-    if (data.type === 'leaderboard') {
-        updateLeaderboard(data.leaderboard);
-    }
-    if (data.type === 'gameState') {
-        updateGameState(data);
-    }
-};
+document.getElementById('player-name').textContent = playerName;
 
-function updateLeaderboard(leaderboard) {
-    const leaderboardList = document.getElementById('leaderboard-list');
-    leaderboardList.innerHTML = '';
-    for (const player in leaderboard) {
-        const li = document.createElement('li');
-        li.textContent = `${player}: $${leaderboard[player]}`;
-        leaderboardList.appendChild(li);
-    }
-}
-
-function updateGameState(data) {
-    document.getElementById('dealer-hand').innerHTML = '';
-    document.getElementById('player-hand').innerHTML = '';
-    document.getElementById('balance').textContent = `$${data.balance}`;
-
-    data.dealerHand.forEach(card => {
-        const cardDiv = createCard(card);
-        document.getElementById('dealer-hand').appendChild(cardDiv);
-    });
-
-    data.playerHand.forEach(card => {
-        const cardDiv = createCard(card);
-        document.getElementById('player-hand').appendChild(cardDiv);
-    });
-}
-
-function createCard(card) {
-    const cardDiv = document.createElement('div');
-    cardDiv.classList.add('card');
-    cardDiv.dataset.value = card.value;
-    cardDiv.dataset.suit = card.suit;
-
-    // Set background color based on card suit
-    const suitColors = {
-        'hearts': 'red',
-        'diamonds': 'red',
-        'clubs': 'black',
-        'spades': 'black'
-    };
-    
-    cardDiv.style.backgroundColor = suitColors[card.suit];
-    cardDiv.innerHTML = `${card.value} of ${card.suit}`;
-    
-    return cardDiv;
-}
+socket.emit('joinGame', playerName);
 
 document.getElementById('placeBet').onclick = () => {
-    const betAmount = document.getElementById('bet').value;
-    ws.send(JSON.stringify({ type: 'placeBet', amount: betAmount }));
+  const betAmount = document.getElementById('bet').value;
+  socket.emit('placeBet', betAmount);
 };
 
 document.getElementById('hit').onclick = () => {
-    ws.send(JSON.stringify({ type: 'hit' }));
+  socket.emit('hit');
 };
 
 document.getElementById('stand').onclick = () => {
-    ws.send(JSON.stringify({ type: 'stand' }));
+  socket.emit('stand');
 };
+
+socket.on('updateLeaderboard', (leaderboard) => {
+  const leaderboardList = document.getElementById('leaderboard-list');
+  leaderboardList.innerHTML = '';
+  for (const player in leaderboard) {
+    const li = document.createElement('li');
+    li.textContent = `${player}: $${leaderboard[player]}`;
+    leaderboardList.appendChild(li);
+  }
+});
+
+socket.on('initialDeal', (data) => {
+  document.getElementById('dealer-hand').innerHTML = `<div class="card">${data.dealerHand.value} of ${data.dealerHand.suit}</div>`;
+  document.getElementById('player-hand').innerHTML = '';
+  data.playerHand.forEach(card => {
+    document.getElementById('player-hand').innerHTML += `<div class="card">${card.value} of ${card.suit}</div>`;
+  });
+});
+
+socket.on('updatePlayerHand', (data) => {
+  document.getElementById('player-hand').innerHTML = '';
+  data.playerHand.forEach(card => {
+    document.getElementById('player-hand').innerHTML += `<div class="card">${card.value} of ${card.suit}</div>`;
+  });
+});
+
+socket.on('bust', () => {
+  alert("You busted!");
+});
+
+socket.on('playerWin', (data) => {
+  updateDealerHand(data.dealerHand);
+  alert("You win!");
+});
+
+socket.on('dealerWin', (data) => {
+  updateDealerHand(data.dealerHand);
+  alert("Dealer wins!");
+});
+
+socket.on('push', (data) => {
+  updateDealerHand(data.dealerHand);
+  alert("It's a push!");
+});
+
+function updateDealerHand(dealerHand) {
+  document.getElementById('dealer-hand').innerHTML = '';
+  dealerHand.forEach(card => {
+    document.getElementById('dealer-hand').innerHTML += `<div class="card">${card.value} of ${card.suit}</div>`;
+  });
+}
