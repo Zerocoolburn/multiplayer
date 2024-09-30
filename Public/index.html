@@ -7,30 +7,26 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="game">
+    <div class="container">
         <h1>Multiplayer Blackjack</h1>
-        <div id="dealer">
+        <div id="dealer-hand" class="hand">
             <h2>Dealer's Hand</h2>
-            <div id="dealer-cards" class="cards"></div>
         </div>
-        <div id="player">
-            <h2>Your Hand (<span id="player-name"></span>)</h2>
-            <div id="player-cards" class="cards"></div>
+        <div id="player-hand" class="hand">
+            <h2>Your Hand</h2>
         </div>
-        <div class="controls">
-            <p>Your Balance: $<span id="balance">10000</span></p>
-            <input id="bet" type="number" placeholder="Bet amount">
-            <button id="place-bet">Place Bet</button>
+        <div>
+            <p>Your Balance: <span id="balance">$10000</span></p>
+            <input type="number" id="bet" placeholder="Enter your bet" min="1" max="10000">
+            <button id="placeBet">Place Bet</button>
             <button id="hit">Hit</button>
             <button id="stand">Stand</button>
         </div>
         <div id="leaderboard">
-            <h3>Leaderboard</h3>
+            <h2>Leaderboard</h2>
             <ul id="leaderboard-list"></ul>
         </div>
     </div>
-
-    <script src="/socket.io/socket.io.js"></script>
     <script src="game.js"></script>
 </body>
 </html>

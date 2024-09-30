@@ -1,55 +1,75 @@
-const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
-const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-const cardWidth = 73;
-const cardHeight = 98;
-const spriteSheetWidth = 870;
-const spriteSheetHeight = 1200;
+const ws = new WebSocket(`ws://${window.location.host}`);
 
-// Player-related variables
-const socket = io(); // Connect to server
-let balance = 10000;
-let playerName = prompt('Enter your name:');
-document.getElementById('player-name').innerText = playerName;
-document.getElementById('balance').innerText = balance;
+ws.onopen = () => {
+    const name = prompt("Enter your name:");
+    ws.send(JSON.stringify({ type: 'join', name }));
+};
 
-socket.emit('join', { name: playerName, balance: balance });
+ws.onmessage = (message) => {
+    const data = JSON.parse(message.data);
+    if (data.type === 'leaderboard') {
+        updateLeaderboard(data.leaderboard);
+    }
+    if (data.type === 'gameState') {
+        updateGameState(data);
+    }
+};
 
-// Function to calculate background position for the sprite sheet
-function getCardBackground(card) {
-    const valueIndex = values.indexOf(card.value);
-    const suitIndex = suits.indexOf(card.suit);
-    const xPos = valueIndex * cardWidth;
-    const yPos = suitIndex * cardHeight;
-    
-    return `-${xPos}px -${yPos}px`;
+function updateLeaderboard(leaderboard) {
+    const leaderboardList = document.getElementById('leaderboard-list');
+    leaderboardList.innerHTML = '';
+    for (const player in leaderboard) {
+        const li = document.createElement('li');
+        li.textContent = `${player}: $${leaderboard[player]}`;
+        leaderboardList.appendChild(li);
+    }
 }
 
-// Function to render card in hand
-function renderCard(card, containerId) {
+function updateGameState(data) {
+    document.getElementById('dealer-hand').innerHTML = '';
+    document.getElementById('player-hand').innerHTML = '';
+    document.getElementById('balance').textContent = `$${data.balance}`;
+
+    data.dealerHand.forEach(card => {
+        const cardDiv = createCard(card);
+        document.getElementById('dealer-hand').appendChild(cardDiv);
+    });
+
+    data.playerHand.forEach(card => {
+        const cardDiv = createCard(card);
+        document.getElementById('player-hand').appendChild(cardDiv);
+    });
+}
+
+function createCard(card) {
     const cardDiv = document.createElement('div');
     cardDiv.classList.add('card');
-    cardDiv.style.backgroundPosition = getCardBackground(card);
-    document.getElementById(containerId).appendChild(cardDiv);
+    cardDiv.dataset.value = card.value;
+    cardDiv.dataset.suit = card.suit;
+
+    // Set background color based on card suit
+    const suitColors = {
+        'hearts': 'red',
+        'diamonds': 'red',
+        'clubs': 'black',
+        'spades': 'black'
+    };
+    
+    cardDiv.style.backgroundColor = suitColors[card.suit];
+    cardDiv.innerHTML = `${card.value} of ${card.suit}`;
+    
+    return cardDiv;
 }
 
-// Example to render a few cards
-const playerCards = [
-    { value: '7', suit: 'hearts' },
-    { value: '6', suit: 'diamonds' },
-    { value: '5', suit: 'clubs' }
-];
+document.getElementById('placeBet').onclick = () => {
+    const betAmount = document.getElementById('bet').value;
+    ws.send(JSON.stringify({ type: 'placeBet', amount: betAmount }));
+};
 
-const dealerCards = [
-    { value: '9', suit: 'spades' },
-    { value: '8', suit: 'hearts' }
-];
+document.getElementById('hit').onclick = () => {
+    ws.send(JSON.stringify({ type: 'hit' }));
+};
 
-function renderGame() {
-    document.getElementById('player-cards').innerHTML = '';
-    document.getElementById('dealer-cards').innerHTML = '';
-
-    playerCards.forEach(card => renderCard(card, 'player-cards'));
-    dealerCards.forEach(card => renderCard(card, 'dealer-cards'));
-}
-
-renderGame();
+document.getElementById('stand').onclick = () => {
+    ws.send(JSON.stringify({ type: 'stand' }));
+};
