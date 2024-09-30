@@ -1,71 +1,51 @@
 const socket = io();
 
-let playerName = prompt("Enter your name:");
-
-document.getElementById('player-name').textContent = playerName;
-
-socket.emit('joinGame', playerName);
-
-document.getElementById('placeBet').onclick = () => {
-  const betAmount = document.getElementById('bet').value;
-  socket.emit('placeBet', betAmount);
-};
-
-document.getElementById('hit').onclick = () => {
-  socket.emit('hit');
-};
-
-document.getElementById('stand').onclick = () => {
-  socket.emit('stand');
-};
-
-socket.on('updateLeaderboard', (leaderboard) => {
-  const leaderboardList = document.getElementById('leaderboard-list');
-  leaderboardList.innerHTML = '';
-  for (const player in leaderboard) {
-    const li = document.createElement('li');
-    li.textContent = `${player}: $${leaderboard[player]}`;
-    leaderboardList.appendChild(li);
+document.getElementById('placeBet').addEventListener('click', () => {
+  const bet = parseInt(document.getElementById('betAmount').value);
+  if (bet > 0) {
+    socket.emit('placeBet', bet);
   }
 });
 
-socket.on('initialDeal', (data) => {
-  document.getElementById('dealer-hand').innerHTML = `<div class="card">${data.dealerHand.value} of ${data.dealerHand.suit}</div>`;
-  document.getElementById('player-hand').innerHTML = '';
-  data.playerHand.forEach(card => {
-    document.getElementById('player-hand').innerHTML += `<div class="card">${card.value} of ${card.suit}</div>`;
+document.getElementById('hit').addEventListener('click', () => {
+  socket.emit('playerAction', 'hit');
+});
+
+document.getElementById('stand').addEventListener('click', () => {
+  socket.emit('playerAction', 'stand');
+});
+
+socket.on('gameUpdate', (gameState) => {
+  // Update player cards
+  const playerCardsDiv = document.getElementById('playerCards');
+  playerCardsDiv.innerHTML = '';
+  const playerHand = gameState.playerHands[socket.id] || [];
+  playerHand.forEach(card => {
+    const cardDiv = document.createElement('div');
+    cardDiv.textContent = card;
+    cardDiv.className = 'card glowing';
+    playerCardsDiv.appendChild(cardDiv);
   });
-});
 
-socket.on('updatePlayerHand', (data) => {
-  document.getElementById('player-hand').innerHTML = '';
-  data.playerHand.forEach(card => {
-    document.getElementById('player-hand').innerHTML += `<div class="card">${card.value} of ${card.suit}</div>`;
+  // Update dealer cards
+  const dealerCardsDiv = document.getElementById('dealerCards');
+  dealerCardsDiv.innerHTML = '';
+  gameState.dealerHand.forEach(card => {
+    const cardDiv = document.createElement('div');
+    cardDiv.textContent = card;
+    cardDiv.className = 'card glowing';
+    dealerCardsDiv.appendChild(cardDiv);
   });
-});
 
-socket.on('bust', () => {
-  alert("You busted!");
-});
+  // Update balance
+  document.getElementById('balanceAmount').textContent = gameState.balances[socket.id];
 
-socket.on('playerWin', (data) => {
-  updateDealerHand(data.dealerHand);
-  alert("You win!");
+  // Update leaderboard
+  const leaderboard = document.getElementById('leaderboard');
+  leaderboard.innerHTML = '';
+  for (const playerId in gameState.balances) {
+    const playerBalance = gameState.balances[playerId];
+    const playerName = gameState.playerHands[playerId] ? `Player ${playerId}` : 'Unknown';
+    leaderboard.innerHTML += `<p>${playerName}: $${playerBalance}</p>`;
+  }
 });
-
-socket.on('dealerWin', (data) => {
-  updateDealerHand(data.dealerHand);
-  alert("Dealer wins!");
-});
-
-socket.on('push', (data) => {
-  updateDealerHand(data.dealerHand);
-  alert("It's a push!");
-});
-
-function updateDealerHand(dealerHand) {
-  document.getElementById('dealer-hand').innerHTML = '';
-  dealerHand.forEach(card => {
-    document.getElementById('dealer-hand').innerHTML += `<div class="card">${card.value} of ${card.suit}</div>`;
-  });
-}

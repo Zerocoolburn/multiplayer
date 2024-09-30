@@ -1,33 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multiplayer Blackjack</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multiplayer Blackjack</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="/socket.io/socket.io.js"></script>
+  <script defer src="game.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Multiplayer Blackjack</h1>
-        <div id="dealer-hand" class="hand">
-            <h2>Dealer's Hand</h2>
-        </div>
-        <div id="player-hand" class="hand">
-            <h2>Your Hand (<span id="player-name"></span>)</h2>
-        </div>
-        <div>
-            <p>Your Balance: <span id="balance">$10000</span></p>
-            <input type="number" id="bet" placeholder="Enter your bet" min="1" max="10000">
-            <button id="placeBet">Place Bet</button>
-            <button id="hit">Hit</button>
-            <button id="stand">Stand</button>
-        </div>
-        <div id="leaderboard">
-            <h2>Leaderboard</h2>
-            <ul id="leaderboard-list"></ul>
-        </div>
+  <div class="container">
+    <h1>Multiplayer Blackjack</h1>
+
+    <div id="dealer-hand">
+      <h2>Dealer's Hand</h2>
+      <div class="hand" id="dealerCards"></div>
     </div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="game.js"></script>
+
+    <div id="player-hand">
+      <h2>Your Hand (<span id="playerName"></span>)</h2>
+      <div class="hand" id="playerCards"></div>
+    </div>
+
+    <div id="balance">
+      Your Balance: $<span id="balanceAmount">10000</span>
+    </div>
+
+    <input type="number" id="betAmount" placeholder="Enter bet">
+    <button id="placeBet">Place Bet</button>
+    <button id="hit">Hit</button>
+    <button id="stand">Stand</button>
+
+    <h3>Leaderboard</h3>
+    <div id="leaderboard"></div>
+  </div>
 </body>
 </html>
