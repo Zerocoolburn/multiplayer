@@ -21,7 +21,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Use the dynamically provided PORT from Railway or fallback to 3000
+// Use Railway's dynamic PORT
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
