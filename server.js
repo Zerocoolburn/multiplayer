@@ -6,75 +6,142 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-let board = Array(9).fill('');
-let currentTurn = 'X';
-let players = {};
-let gameActive = true;
-
 app.use(express.static('Public'));
 
-const checkWinner = () => {
-    const winPatterns = [
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8],
-        [0, 4, 8],
-        [2, 4, 6],
-    ];
+let players = {};
+let gameInProgress = false;
+let dealerHand = [];
+let currentPlayer = null;
 
-    for (let pattern of winPatterns) {
-        const [a, b, c] = pattern;
-        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-            return pattern; // Return winning pattern
+const deck = generateDeck();
+
+function generateDeck() {
+    const suits = ['♠', '♥', '♦', '♣'];
+    const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+    const deck = [];
+    suits.forEach(suit => {
+        ranks.forEach(rank => {
+            deck.push({ rank, suit });
+        });
+    });
+    return deck;
+}
+
+function dealCard(hand) {
+    const card = deck.pop();
+    hand.push(card);
+}
+
+function calculateHandValue(hand) {
+    let value = 0;
+    let aces = 0;
+    hand.forEach(card => {
+        if (['J', 'Q', 'K'].includes(card.rank)) {
+            value += 10;
+        } else if (card.rank === 'A') {
+            value += 11;
+            aces += 1;
+        } else {
+            value += parseInt(card.rank);
         }
+    });
+    while (value > 21 && aces) {
+        value -= 10;
+        aces -= 1;
     }
-
-    return board.includes('') ? null : 'draw';
-};
+    return value;
+}
 
 io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
+    console.log('A player connected:', socket.id);
 
-    socket.on('playerJoin', (name) => {
-        players[socket.id] = name;
-        console.log(`${name} joined the game.`);
+    socket.on('joinGame', (playerName) => {
+        if (!players[socket.id]) {
+            players[socket.id] = { name: playerName, balance: 10000, hand: [] };
+        }
+        updateLeaderboard();
+        if (!gameInProgress) {
+            startNewRound();
+        }
     });
 
-    socket.on('playerMove', ({ cellId, player }) => {
-        const index = parseInt(cellId.split('-')[1]);
-        if (board[index] === '' && gameActive) {
-            board[index] = player;
-            const winner = checkWinner();
+    socket.on('placeBet', ({ playerName, betAmount }) => {
+        if (players[socket.id].balance >= betAmount && !gameInProgress) {
+            players[socket.id].balance -= betAmount;
+            players[socket.id].bet = betAmount;
+            currentPlayer = socket.id;
+            startNewRound();
+        }
+    });
 
-            if (winner) {
-                if (winner === 'draw') {
-                    io.emit('gameUpdate', { board, turn: '', winner: null });
-                } else {
-                    io.emit('gameUpdate', { board, turn: '', winner: currentTurn, pattern: winner });
-                    gameActive = false;
-                }
+    socket.on('hit', (playerName) => {
+        if (currentPlayer === socket.id && gameInProgress) {
+            dealCard(players[socket.id].hand);
+            const playerValue = calculateHandValue(players[socket.id].hand);
+            if (playerValue > 21) {
+                gameInProgress = false;
+                socket.emit('gameState', { playerHand: players[socket.id].hand, dealerHand, status: 'Busted!' });
+                endRound();
             } else {
-                currentTurn = currentTurn === 'X' ? 'O' : 'X';
-                io.emit('gameUpdate', { board, turn: currentTurn, winner: null });
+                socket.emit('gameState', { playerHand: players[socket.id].hand, dealerHand, status: `Your value: ${playerValue}` });
             }
         }
     });
 
-    socket.on('disconnect', () => {
-        console.log('A user disconnected:', socket.id);
-        delete players[socket.id];
-    });
-});
+    socket.on('stand', (playerName) => {
+        if (currentPlayer === socket.id && gameInProgress) {
+            const playerValue = calculateHandValue(players[socket.id].hand);
+            let dealerValue = calculateHandValue(dealerHand);
 
-// Reset the game
-io.on('resetGame', () => {
-    board = Array(9).fill('');
-    currentTurn = 'X';
-    gameActive = true;
-    io.emit('resetGame');
+            while (dealerValue < 17) {
+                dealCard(dealerHand);
+                dealerValue = calculateHandValue(dealerHand);
+            }
+
+            if (dealerValue > 21 || playerValue > dealerValue) {
+                players[socket.id].balance += players[socket.id].bet * 2;
+                io.emit('gameState', { playerHand: players[socket.id].hand, dealerHand, status: 'You win!' });
+            } else if (dealerValue === playerValue) {
+                players[socket.id].balance += players[socket.id].bet;
+                io.emit('gameState', { playerHand: players[socket.id].hand, dealerHand, status: 'It\'s a draw!' });
+            } else {
+                io.emit('gameState', { playerHand: players[socket.id].hand, dealerHand, status: 'Dealer wins!' });
+            }
+
+            gameInProgress = false;
+            endRound();
+        }
+    });
+
+    socket.on('disconnect', () => {
+        console.log('A player disconnected:', socket.id);
+        delete players[socket.id];
+        updateLeaderboard();
+    });
+
+    function startNewRound() {
+        gameInProgress = true;
+        dealerHand = [];
+        dealCard(dealerHand);
+        dealCard(dealerHand);
+        players[currentPlayer].hand = [];
+        dealCard(players[currentPlayer].hand);
+        dealCard(players[currentPlayer].hand);
+        io.emit('gameState', { playerHand: players[currentPlayer].hand, dealerHand: [dealerHand[0]], status: 'Game Started' });
+    }
+
+    function endRound() {
+        updateLeaderboard();
+        setTimeout(() => {
+            io.emit('gameState', { playerHand: [], dealerHand: [], status: 'New round starting soon...' });
+            startNewRound();
+        }, 5000);
+    }
+
+    function updateLeaderboard() {
+        const leaderboard = Object.values(players).map(player => ({ name: player.name, balance: player.balance }));
+        io.emit('updateLeaderboard', leaderboard);
+    }
 });
 
 const PORT = process.env.PORT || 3000;

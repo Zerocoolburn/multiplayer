@@ -1,63 +1,83 @@
 body {
+    background-color: #2d3436;
+    color: white;
+    font-family: Arial, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #282c34;
-    color: white;
-    font-family: Arial, sans-serif;
+    margin: 0;
 }
 
-h1 {
+h1, h2 {
     text-align: center;
-    margin-bottom: 20px;
 }
 
 .container {
     text-align: center;
+    width: 80%;
 }
 
-#grid {
-    display: grid;
-    grid-template-columns: repeat(3, 100px);
-    grid-gap: 10px;
-}
-
-.cell {
-    width: 100px;
-    height: 100px;
-    border: 2px solid white;
+#game-area {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2rem;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+.hand {
+    border: 2px solid white;
+    padding: 10px;
+    background-color: #1e272e;
+}
+
+#balance-info {
+    margin-top: 20px;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #0984e3;
+    color: white;
+    border: none;
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
 }
 
-.cell:hover {
-    background-color: #444;
-    transform: scale(1.1);
-}
-
-.winning-cell {
-    background-color: yellow;
-    animation: glow 1s infinite alternate;
-}
-
-@keyframes glow {
-    from {
-        box-shadow: 0 0 10px yellow;
-    }
-    to {
-        box-shadow: 0 0 20px yellow;
-    }
+button:hover {
+    background-color: #74b9ff;
 }
 
 .hidden {
     display: none;
 }
 
-#player-info, #status {
-    margin: 20px 0;
+.card {
+    display: inline-block;
+    width: 60px;
+    height: 90px;
+    border: 1px solid white;
+    text-align: center;
+    line-height: 90px;
+    font-size: 1.5rem;
+    margin: 5px;
+    background-color: #dfe6e9;
+    color: black;
+}
+
+.winning-player {
+    background-color: yellow;
+    box-shadow: 0 0 10px yellow;
+}
+
+#leaderboard {
+    margin-top: 40px;
+}
+
+#leaderboard-list {
+    list-style: none;
+    padding: 0;
+}
+
+#leaderboard-list li {
+    margin: 5px 0;
 }

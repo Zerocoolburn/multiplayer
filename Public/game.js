@@ -1,53 +1,75 @@
 const socket = io();
+let playerName = '';
+let playerBalance = 10000;
+let playerHand = [];
+let dealerHand = [];
+let currentBet = 0;
 
-const cells = document.querySelectorAll('.cell');
-const gameBoard = document.getElementById('game-board');
-const statusDiv = document.getElementById('status');
-const nameInput = document.getElementById('name-input');
-const startGameButton = document.getElementById('start-game');
-let playerName;
-let currentTurn = 'X'; // X starts the game
-let gameActive = true;
+const playerCardsDiv = document.getElementById('player-cards');
+const dealerCardsDiv = document.getElementById('dealer-cards');
+const playerBalanceSpan = document.getElementById('player-balance');
+const playerNameSpan = document.getElementById('player-name');
+const gameStatusDiv = document.getElementById('game-status');
+const leaderboardList = document.getElementById('leaderboard-list');
 
-startGameButton.addEventListener('click', () => {
-    playerName = nameInput.value;
-    if (playerName.trim() === '') {
-        alert('Please enter your name');
+document.getElementById('join-game').addEventListener('click', () => {
+    playerName = document.getElementById('name-input').value.trim();
+    if (!playerName) {
+        alert('Please enter a name');
         return;
     }
-    socket.emit('playerJoin', playerName);
     document.getElementById('player-info').classList.add('hidden');
-    gameBoard.classList.remove('hidden');
+    document.getElementById('game-area').classList.remove('hidden');
+    playerNameSpan.textContent = playerName;
+    socket.emit('joinGame', playerName);
 });
 
-cells.forEach((cell) => {
-    cell.addEventListener('click', () => {
-        if (!gameActive || cell.textContent !== '') return;
-        socket.emit('playerMove', { cellId: cell.id, player: currentTurn });
-    });
-});
-
-socket.on('gameUpdate', ({ board, turn, winner }) => {
-    board.forEach((mark, index) => {
-        cells[index].textContent = mark;
-    });
-    currentTurn = turn;
-    statusDiv.textContent = winner ? `${winner} wins!` : `${currentTurn}'s turn`;
-
-    if (winner) {
-        gameActive = false;
-        winner.forEach((winIndex) => {
-            document.getElementById(`cell-${winIndex}`).classList.add('winning-cell');
-        });
+document.getElementById('place-bet').addEventListener('click', () => {
+    const betAmount = parseInt(document.getElementById('bet-amount').value);
+    if (betAmount > playerBalance || betAmount <= 0) {
+        alert('Invalid bet');
+        return;
     }
+    currentBet = betAmount;
+    socket.emit('placeBet', { playerName, betAmount });
 });
 
-socket.on('resetGame', () => {
-    cells.forEach((cell) => {
-        cell.textContent = '';
-        cell.classList.remove('winning-cell');
-    });
-    gameActive = true;
-    currentTurn = 'X';
-    statusDiv.textContent = "X's turn";
+document.getElementById('hit').addEventListener('click', () => {
+    socket.emit('hit', playerName);
 });
+
+document.getElementById('stand').addEventListener('click', () => {
+    socket.emit('stand', playerName);
+});
+
+socket.on('gameState', (state) => {
+    playerHand = state.playerHand;
+    dealerHand = state.dealerHand;
+    renderCards(playerCardsDiv, playerHand);
+    renderCards(dealerCardsDiv, dealerHand);
+    gameStatusDiv.textContent = state.status;
+});
+
+socket.on('updateBalance', (balance) => {
+    playerBalance = balance;
+    playerBalanceSpan.textContent = playerBalance;
+});
+
+socket.on('updateLeaderboard', (leaderboard) => {
+    leaderboardList.innerHTML = '';
+    leaderboard.forEach(player => {
+        const li = document.createElement('li');
+        li.textContent = `${player.name}: $${player.balance}`;
+        leaderboardList.appendChild(li);
+    });
+});
+
+function renderCards(element, hand) {
+    element.innerHTML = '';
+    hand.forEach(card => {
+        const cardDiv = document.createElement('div');
+        cardDiv.classList.add('card');
+        cardDiv.textContent = card.rank + card.suit;
+        element.appendChild(cardDiv);
+    });
+}

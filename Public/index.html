@@ -3,29 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multiplayer Tic-Tac-Toe</title>
+    <title>Multiplayer Blackjack</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Multiplayer Tic-Tac-Toe</h1>
+        <h1>Multiplayer Blackjack</h1>
         <div id="player-info">
             <input type="text" id="name-input" placeholder="Enter your name">
-            <button id="start-game">Start Game</button>
+            <button id="join-game">Join Game</button>
         </div>
-        <div id="game-board" class="hidden">
-            <div id="grid">
-                <div class="cell" id="cell-0"></div>
-                <div class="cell" id="cell-1"></div>
-                <div class="cell" id="cell-2"></div>
-                <div class="cell" id="cell-3"></div>
-                <div class="cell" id="cell-4"></div>
-                <div class="cell" id="cell-5"></div>
-                <div class="cell" id="cell-6"></div>
-                <div class="cell" id="cell-7"></div>
-                <div class="cell" id="cell-8"></div>
+
+        <div id="game-area" class="hidden">
+            <div id="dealer-hand" class="hand">
+                <h2>Dealer's Hand</h2>
+                <div id="dealer-cards"></div>
             </div>
-            <div id="status"></div>
+
+            <div id="player-hand" class="hand">
+                <h2>Your Hand (<span id="player-name"></span>)</h2>
+                <div id="player-cards"></div>
+            </div>
+
+            <div id="balance-info">
+                <h3>Your Balance: $<span id="player-balance">10000</span></h3>
+                <input type="number" id="bet-amount" placeholder="Enter bet">
+                <button id="place-bet">Place Bet</button>
+                <button id="hit">Hit</button>
+                <button id="stand">Stand</button>
+            </div>
+
+            <div id="game-status"></div>
+        </div>
+
+        <div id="leaderboard">
+            <h2>Leaderboard</h2>
+            <ul id="leaderboard-list"></ul>
         </div>
     </div>
 

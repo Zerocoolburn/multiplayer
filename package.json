@@ -1,5 +1,5 @@
 {
-  "name": "multiplayer-tictactoe",
+  "name": "multiplayer-blackjack",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
